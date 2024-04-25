@@ -1,0 +1,57 @@
+{% extends 'blog/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="post">
+        <article class="media content-section">
+            <img class= "rounded-circle article-img" src="{{ image_url }}">
+              <div class="media-body">
+                <div class="article-metadata">
+                  <a class="mr-2" href="{% url 'user_posts' post.author.username %}">{{ post.author }}</a>
+                  <small class="text-muted">{{ post.published_date }}</small>
+                </div>
+                <h2><a class="article-title" href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h2>
+                <p class="article-content">{{ post.text|linebreaksbr }}</p>
+                <hr>
+              </div>
+                {% if post.author == request.user %}
+                    <div>
+                        <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'post_update' post.pk %}">Update</a>
+                        <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'post_delete' post.pk %}">Delete</a>  
+                    </div>
+                {% endif %} 
+                
+                {% if user.is_authenticated %}
+                <div>
+                        <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+                    <form action="{% url 'post_likes' post.pk %}" method="POST">
+                        {% csrf_token %}
+                        {% if liked %}
+                        <button type="submit", name="post_id", value="{{ post.id }}", class="btn btn-warning btn-sm mt-1 mb-1">UnLike</button>
+                        {% else %}
+                        <button type="submit", name="post_id", value="{{ post.id }}", class="btn btn-primary btn-sm mt-1 mb-1">Like</button>
+                        {% endif %}
+                    </form>
+                {% else %}
+                    <a class="btn btn-info btn-sm mt-1 mb-1" href="{% url 'login' %}?next={{request.path}}">Login to like this article!</a><br>
+                {% endif %}
+                <strong class="text-secondary">{{ num_of_likes }} Like{{ num_of_likes|pluralize }}</strong>
+                </div>
+        
+        </article>
+    </div>
+
+        
+    <hr>
+    <a class="btn btn-info btn-sm mt-1 mb-1" href="{% url 'comment_create' pk=post.pk %}">Leave a Comment</a>
+    {% for comment in post.comments.all %}
+        <div class="comment">
+            <div class="date">{{ comment.created_date }}</div>
+            <strong>{{ comment.author }}</strong>
+            <p>{{ comment.text|linebreaks }}</p>
+        </div>
+    {% empty %}
+        <p>No comments here yet :(</p>
+    {% endfor %}
+    
+{% endblock %}
